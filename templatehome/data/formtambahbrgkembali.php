@@ -1,0 +1,310 @@
+<script>
+	$(document).ready(function (e) {
+	$('#databarang').DataTable();
+	$('#datapemasok').DataTable();
+})
+</script>
+  
+ <script language="javascript">
+function hitung(){ 
+	var harga=parseInt(document.brgmasuk.hargabrg.value);
+	var jumlah=parseInt(document.brgmasuk.jml.value);
+	
+	var tothrg=harga*jumlah;
+	
+	document.brgmasuk.subtotal.value=tothrg;
+}  
+</script>
+
+<script type="text/javascript" src="input.js"></script>
+<?php
+include '../koneksi.php';
+ $today = date("Ymd");
+ $query1 = "SELECT max(nokeluar) as maxID FROM bukukembali WHERE nokeluar LIKE '$today%'";
+    $hasil = mysql_query($query1);
+    $data = mysql_fetch_array($hasil);
+    $idMax = $data['maxID'];
+	$NoUrut = (int) substr($idMax, 8, 4);
+    $NoUrut++;
+	$NewID = $today .sprintf('%04s', $NoUrut);
+?>
+	<div class="col-md-12">
+	<!-- Horizontal Form -->
+		<div class="box box-info">
+			<div class="box-header with-border">
+				<h3 class="box-title">Input Pengembalian</h3>
+			</div>
+            <!-- /.box-header -->
+            <!-- form start -->
+			<div class="container">
+        <div class="card">
+            
+            <div class="card-body">
+
+            <form class="form-horizontal form-label-left input_mask" method="POST" role="form" action="home.php?p=prosesbantukembali" name="brgmasuk" id="finput">
+			<div class="box-body">
+            <div class="col-sm-10">
+                <a class="btn btn-success btn-sm btnTambah" data-toggle="modal" data-target="#caripem"><i class="glyphicon glyphicon-search"> Cari Peminjam</i></a>
+                </div>
+                <div class="form-group">
+                    	<label class="col-sm-10 control-label">No invoice</label>
+                    <div class="col-sm-10">
+                		<input type="text" id="nokeluar" name="nokeluar" class="form-control" readonly >
+                	</div>
+              
+                <label class="col-sm-10 control-label" align="left">Tanggal Pinjam</label>
+                <div class="col-sm-10">
+                <input type="text" id="tglkeluar" name="tglkeluar" class="form-control" readonly >
+                </div>
+                </div>
+                <div class="form-group">
+                <label class="col-sm-10 control-label" align="left">Nama Peminjam</label>
+                <div class="col-sm-10">
+                <input type="text" id="peminjam" name="peminjam" class="form-control" readonly >
+                </div>
+                </div>
+                <div class="form-group">
+                <label class="col-sm-10 control-label" align="left">Alamat</label>
+                <div class="col-sm-10">
+                <input type="text" id="alamat" name="alamat" class="form-control" readonly >
+                </div>
+                </div>
+                <div class="form-group">
+                <label class="col-sm-10 control-label" align="left">Nomor</label>
+                <div class="col-sm-10">
+                <input type="text" id="nomor" name="nomor" class="form-control" readonly >
+                </div>
+                </div>
+                
+				<br>
+                
+                
+
+                <div class="col-sm-10">
+                <a class="btn btn-success btn-sm btnTambah" data-toggle="modal" data-target="#buku"><i class="glyphicon glyphicon-search"> Cari Buku</i></a>
+                </div>
+				<div class="form-group">
+                    	<label class="col-sm-10 control-label">Kode Buku</label>
+                    <div class="col-sm-10">
+                		<input type="text" id="detailkdbuku" name="detailkdbuku" class="form-control" readonly >
+                	</div>
+              
+                <label class="col-sm-10 control-label" align="left">Judul Buku</label>
+                <div class="col-sm-10">
+                <input type="text" id="detailjudul" name="detailjudul" class="form-control" readonly >
+                </div>
+                </div>
+                <div class="form-group">
+                <label class="col-sm-10 control-label" align="left">Kategori</label>
+                <div class="col-sm-10">
+                <input type="text" id="detailkategori" name="detailkategori" class="form-control" readonly >
+                </div>
+                </div>
+                <br>
+            &nbsp;&nbsp;   <button type="submit" class="btn btn-primary btnSimpan" name="ok" id="ok"> <span class="glyphicon glyphicon-floppy-saved"></span> Input</button>
+              
+                </div>
+                </div>
+                <!-- footer modal -->
+                <div class="box-footer">
+               </div>
+  
+                <?php
+
+ include '../koneksi.php';
+ $result = mysql_query("SELECT * FROM buku JOIN bantubalik ON kdbuku=idbuku ");
+ $total = mysql_num_rows($result);
+ ?> 
+ <div class="tampil">
+ <div class="col-md-12">
+     <!-- Horizontal Form -->
+     <div class="box box-info">
+         <div class="box-header with-border">
+             <h3 class="box-title">Daftar Buku Yang Dipinjam</h3>
+         </div>
+ 
+         <div class="box-body" id="tampil">
+                 <table id="datajadwal" class="table table-bordered table-striped">
+                     <thead>
+                         <tr>
+                             <th>No</th>
+                             <th>Kode Buku</th>
+                             <th>Judul Buku</th>
+                             <th>Kategori</th>
+                         
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <?php
+                         $nomor = 1;
+                         while ($row = mysql_fetch_assoc($result)) {
+                             ?>
+                             <tr>
+                                 <td><?php echo $nomor ?></td>
+                                 <td><?php echo $row['kdbuku'] ?></td>
+                                 <td><?php echo $row['judul'] ?></td>                            
+                                 <td><?php echo $row['kategori'] ?></td>
+                               
+                                       
+                                 <td><a href="home.php?p=hapustempbalik&kdbuku=<?php echo $row['kdbuku'] ?>" 
+                                 onclick="pesan = confirm('Yakin data di hapus?'); if (pesan) return true; else return false;" 
+                                 class="btn btn-danger btn- sm"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
+ 
+                                 </td>
+                             </tr>
+                             <?php
+                             $nomor++;
+                         }
+                         ?>
+                     </tbody>                            
+                 </table>
+         </div>
+     </div>
+ </div>
+ <center>
+                 <button type="submit" class="btn btn-primary btnSimpan" name="simpan" > <span class="glyphicon glyphicon-floppy-saved"></span> Simpan</button>
+                 <a href="kembali.php?" class="btn btn-danger btn-close"><span class="glyphicon
+                 glyphicon-remove-circle"></span> Batal</a></center>
+                 </div>
+                 </form>
+                 </div>
+                 </div>
+                 
+ 
+ 
+ 
+ 
+
+                
+                
+                <!-- Modal Cari Barang-->
+                <div id="caripem" class="modal modal fade" role="dialog">
+                <div class="modal-dialog">
+                <!-- konten modal-->
+                <div class="modal-content">
+                <!-- heading modal -->
+                <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"></h4>
+                </div>
+                <!-- body modal -->
+                <div class="modal-body">
+
+
+				<?php
+               include '../koneksi.php';
+                $result = mysql_query("SELECT *FROM bukukeluar ORDER BY nokeluar ASC");
+                ?>
+
+                <table id="barang" class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                <th>No</th>
+                <th>Nomor Invoice</th>
+                <th>Ra</th>
+                <th>Nama Peminjam</th>
+                <th>Pilih</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                $nomor = 1;
+                while ($row = mysql_fetch_assoc($result)) {
+                ?>
+                <tr>
+                <td><?php echo $nomor ?></td>
+                <td><?php echo $row['nokeluar'] ?></td>
+                <td><?php echo $row['peminjam'] ?></td>
+               
+    
+                <td>
+                <td><span class="btn btn-info btn-sm" type="button" onClick="
+document.getElementById('nokeluar').value = '<?php echo $row['nokeluar'] ?>'; 
+document.getElementById('tglkeluar').value = '<?php echo
+$row['tglkeluar'] ?>';
+document.getElementById('peminjam').value = '<?php echo
+$row['peminjam'] ?>';
+document.getElementById('alamat').value = '<?php echo
+$row['alamat'] ?>';
+document.getElementById('nomor').value = '<?php echo
+$row['nomor'] ?>';
+$('#buku').modal('hide');"></button>O<i class="glyphicon glyphicon-ok-sign" aria- hidden="true"></i></span>
+                </td>
+                </tr>
+                <?php
+                $nomor++;
+                }
+                ?>
+                </tbody>
+                </table>
+                </div>
+                </div>
+                <!-- footer modal -->
+                <div class="modal-footer">
+                </div>
+                </form>
+                </div>
+                </div>
+
+
+<!-- Modal Cari Pemasok-->
+<div id="buku" class="modal modal fade" role="dialog">
+<div class="modal-dialog">
+<!-- konten modal-->
+<div class="modal-content">
+<!-- heading modal -->
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal">&times;</button>
+<h4 class="modal-title"></h4>
+</div>
+<!-- body modal -->
+<div class="modal-body">
+
+
+<?php
+include '../koneksi.php';
+$result = mysql_query("SELECT *  FROM detailkeluar ORDER BY detailnokeluar ASC");
+?>
+<table id="pemasok" class="table table-bordered table-striped">
+<thead>
+<tr>
+                            <th>No</th>
+                            <th>Invoice</th>
+                            <th>Kode Buku</th>
+                            <th>Judul Buku</th>
+                         
+                            <th>Aksi</th>
+                        
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $nomor = 1;
+                        while ($row = mysql_fetch_assoc($result)) {
+                            ?>
+                            <tr>
+<td><?php echo $nomor ?></td>
+<td><?php echo $row['detailnokeluar'] ?></td>
+<td><?php echo $row['detailkdbuku'] ?></td>
+<td><?php echo $row['detailjudul'] ?></td>
+<td><span class="btn btn-info btn-sm" type="button" onClick="
+document.getElementById('detailkdbuku').value = '<?php echo $row['detailkdbuku'] ?>'; 
+document.getElementById('detailjudul').value = '<?php echo
+$row['detailjudul'] ?>';
+document.getElementById('detailkategori').value = '<?php echo
+$row['detailkategori'] ?>';
+$('#buku').modal('hide');"></button>O<i class="glyphicon glyphicon-ok-sign" aria- hidden="true"></i></span>
+</td>
+</tr>
+<?php
+$nomor++;
+}
+?>
+</tbody>
+</table>
+</div>
+<!-- footer modal -->
+<div class="modal-footer">
+</div>
+</form>
+</div>
